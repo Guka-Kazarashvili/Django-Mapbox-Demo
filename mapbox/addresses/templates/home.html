@@ -1,0 +1,50 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    
+    <script src='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js'></script>
+    <link href='https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css' rel='stylesheet' />
+
+    <link rel="stylesheet" type="text/css" href="{% static 'css/form.css' %}">
+    <title>Mapbox DEMO</title>
+</head>
+<body>
+    <h1>Django</h1>
+
+    <form method="POST" class="custom-form">
+        {% csrf_token %}
+        <div class="form-group">
+            <label for="{{ form.address.id_for_label }}">Address:</label>
+            {{ form.address }}
+        </div>
+        <button type="submit" class="submit-button">Submit Address</button>
+    </form>
+
+    
+    <div id='map' style='width: 100%; height: 600px;'></div>
+    <script>
+    mapboxgl.accessToken = '{{ access_token }}';
+    const map = new mapboxgl.Map({
+        container: 'map', // container ID
+        style: 'mapbox://styles/mapbox/streets-v12', // style URL
+        center: [44.8014495, 41.6934591], // starting position [lng, lat]
+        zoom: 11, // starting zoom
+    });
+    {% for address in addresses %}
+    var marker = new mapboxgl.Marker()
+        .setLngLat([{{address.long}}, {{address.lat}}])
+        .setPopup(new mapboxgl.Popup().setHTML(`<p>{{ address.address }}</p>
+            <form action="{% url 'delete_address' address.id %}" method="post">
+                {% csrf_token %}
+                <button type="submit">Delete</button>
+            </form>`))
+        .addTo(map);
+    {% endfor %}
+    </script>
+</body>
+</html>
